@@ -1,13 +1,7 @@
-import pandas as pd
-import numpy as np
-import sklearn
-import matplotlib.pyplot as plt
-import xgboost as xgb
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.preprocessing import MinMaxScaler
-import pandas_datareader as dr
-from collections import Counter, OrderedDict
+from collections import Counter
 
+import pandas as pd
+import pandas_datareader as dr
 
 
 def get_data(spsymbols, start, end):
@@ -19,16 +13,12 @@ def get_data(spsymbols, start, end):
     return dict_of_dfs
 
 
-
-
-
-
 def add_candle_sign(df):
     ''' label each candle as up or down depending on the difference between open and close'''
     candle_sign = []
     for i in range(df.shape[0]):
-        Open = df.iloc[i:i+1, 3].values.tolist()[0]
-        close = df.iloc[i:i+1, 4].values.tolist()[0]
+        Open = df.iloc[i:i + 1, 3].values.tolist()[0]
+        close = df.iloc[i:i + 1, 4].values.tolist()[0]
         if Open > close:
             candle_sign.append('Down')
         elif close > Open:
@@ -37,9 +27,6 @@ def add_candle_sign(df):
             candle_sign.append('Neutral')
     df['candle_sign'] = candle_sign
     return df
-
-
-
 
 
 # trade_type means short or long
@@ -86,7 +73,6 @@ def is_trade_successful(df, start_ind, trade_type, risk_reward_ratio=3):
         days_in_trade = -1
 
     return result, days_in_trade
-
 
 
 def add_trade(trade_dir, curr_ind, df, start_ind, risk_reward_ratio):
@@ -285,11 +271,16 @@ def add_trade(trade_dir, curr_ind, df, start_ind, risk_reward_ratio):
     return curr_ind
 
 
-# since the basic rules define at least 4 candles we will store the data from the 4 last days as the basic features for the trade
 def generate_trades(df, risk_reward_ratio=3):
+    """
+    Since the basic rules define at least 4 candles we will store the data from the 4 last days
+    as the basic features for the trade
+    :param df:
+    :param risk_reward_ratio:
+    :return:
+    """
     optional_trades = pd.DataFrame()
-
-    for i in range(5, df.shape[0] - 10):
+    for i in range(5, df.shape[0] - 10):  # We start from the 5-th record
         current_sign = df.loc[i][-1]
         t_minus_1_sign = df.loc[i - 1][-1]
         t_minus_2_sign = df.loc[i - 2][-1]
@@ -297,11 +288,9 @@ def generate_trades(df, risk_reward_ratio=3):
         t_minus_4_sign = df.loc[i - 4][-1]
         t_minus_5_sign = df.loc[i - 5][-1]
 
-        trade_direction = ''
+        trade_direction = 'Up'   # TODO: We need to think more about this line
         if current_sign == 'Up':
             trade_direction = 'Down'
-        else:
-            trade_direction = 'Up'
         # check first rule - 4 candles in the same direction
         if (current_sign == t_minus_1_sign == t_minus_2_sign == t_minus_3_sign) and (current_sign != 'Neutral'):
             for j in range(1, 6):  # a trade can enter only in range of 5 days
@@ -309,7 +298,6 @@ def generate_trades(df, risk_reward_ratio=3):
                 if trade_direction == 'Up':
                     if (df.loc[ind][3] <= df.loc[i][1] and df.loc[ind][3] >= df.loc[i][2]) and (
                             df.loc[ind][1] > df.loc[i][1]):
-
                         i = add_trade(trade_direction, i, df, ind, risk_reward_ratio)
                         break
 

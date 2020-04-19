@@ -1,7 +1,7 @@
 rules for reversal trading strategy:
 
-1) should be clear trend (up or down) (how we define trend is tricky) # for the begining i will ignore this rule
-2) reversal take only with general trend direction (reversal for long when the trend is also long) # for the begining i will ignore this rule
+1) should be clear trend (up or down) (how we define trend is tricky) # for the beginning i will ignore this rule
+2) reversal take only with general trend direction (reversal for long when the trend is also long) # for the beginning i will ignore this rule
 3) risk-reward ratio should be at least 1:3
 4) at least 4 candles in the same direction (should generate additional column that
 will indicate up/down depending on the difference between open and close)
