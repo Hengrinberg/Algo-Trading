@@ -280,7 +280,8 @@ def generate_trades(df, risk_reward_ratio=3):
     :return:
     """
     optional_trades = pd.DataFrame()
-    for i in range(5, df.shape[0] - 10):  # We start from the 5-th record
+    DAYS = 5
+    for i in range(DAYS, df.shape[0] - 10):  # We start from the 5-th record
         current_sign = df.loc[i][-1]
         t_minus_1_sign = df.loc[i - 1][-1]
         t_minus_2_sign = df.loc[i - 2][-1]
@@ -288,22 +289,27 @@ def generate_trades(df, risk_reward_ratio=3):
         t_minus_4_sign = df.loc[i - 4][-1]
         t_minus_5_sign = df.loc[i - 5][-1]
 
-        trade_direction = 'Up'   # TODO: We need to think more about this line
+        trade_direction = 'Up'  # TODO: We need to think more about this line
         if current_sign == 'Up':
             trade_direction = 'Down'
-        # check first rule - 4 candles in the same direction
-        if (current_sign == t_minus_1_sign == t_minus_2_sign == t_minus_3_sign) and (current_sign != 'Neutral'):
-            for j in range(1, 6):  # a trade can enter only in range of 5 days
+
+        # First rule: check first rule - 4 candles in the same direction
+        if (current_sign != 'Neutral') and (current_sign == t_minus_1_sign == t_minus_2_sign == t_minus_3_sign):
+            for j in range(1, DAYS + 1):  # a trade can enter only in range of 5 days
                 ind = i + j
+                future_open_value = df.loc[ind]['Open']
+                future_high = df.loc[ind]['High']
+                future_low = df.loc[ind]['Low']
+                current_high = df.loc[i]['High']
+                current_low = df.loc[i]['Low']
                 if trade_direction == 'Up':
-                    if (df.loc[ind][3] <= df.loc[i][1] and df.loc[ind][3] >= df.loc[i][2]) and (
-                            df.loc[ind][1] > df.loc[i][1]):
+                    if (current_high >= future_open_value >= current_low) and \
+                            (future_high > current_high):
                         i = add_trade(trade_direction, i, df, ind, risk_reward_ratio)
                         break
-
                 if trade_direction == 'Down':
-                    if (df.loc[ind][3] <= df.loc[i][1] and df.loc[ind][3] >= df.loc[i][2]) and (
-                            df.loc[ind][2] < df.loc[i][2]):
+                    if (future_open_value <= current_high and future_open_value >= current_low) and (
+                            future_low < current_low):
                         i = add_trade(trade_direction, i, df, ind, risk_reward_ratio)
                         break
 
