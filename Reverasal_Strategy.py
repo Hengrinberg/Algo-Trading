@@ -110,7 +110,7 @@ def add_trade(trade_dir, curr_ind, df, start_ind, risk_reward_ratio):
     global days_in_trade
     global is_successful_trade
 
-    if len(date) == 0:
+    if len(date) == 0:   # TODO: to understand why we need it
         if trade_dir == 'Up':
             date.append(df.loc[curr_ind][0])
             entry_price.append(df.loc[curr_ind][1])
@@ -187,8 +187,7 @@ def add_trade(trade_dir, curr_ind, df, start_ind, risk_reward_ratio):
 
         if curr_ind == start_ind:
             curr_ind += 1
-
-    if df.loc[start_ind][0] > date[-1] and len(date) > 0:
+    elif df.loc[start_ind][0] > date[-1] and len(date) > 0:
         if trade_dir == 'Up':
             date.append(df.loc[curr_ind][0])
             entry_price.append(df.loc[curr_ind][1])
@@ -319,20 +318,23 @@ def generate_trades(df, risk_reward_ratio=3):
         majority_sign = list(c.keys())[max_index]
 
         if (is_4_out_of_5 == 1) and (current_sign == majority_sign):  # stopped here
-            for j in range(1, 6):  # a trade can enter only in range of 5 days
+            for j in range(1, DAYS + 1):  # a trade can enter only in range of 5 days
                 future_index_day = current_day_index + j
                 if (trade_direction == 'Up') and (df.loc[future_index_day][3] <= df.loc[current_day_index][1]) and (
                         df.loc[future_index_day][3] >= df.loc[current_day_index][2]) and (df.loc[future_index_day][1] > df.loc[current_day_index][1]):
                     current_day_index = add_trade(trade_direction, current_day_index, df, future_index_day, risk_reward_ratio)
                     break
-
                 if (trade_direction == 'Down') and (df.loc[future_index_day][3] <= df.loc[current_day_index][1]) and (
                         df.loc[future_index_day][3] >= df.loc[current_day_index][2]) and (df.loc[future_index_day][2] < df.loc[current_day_index][2]):
                     current_day_index = add_trade(trade_direction, current_day_index, df, future_index_day, risk_reward_ratio)
                     break
 
         # check third rule - 5 out of 6 candles are in the same direction
-        last_6_candle_signs = [current_sign, t_minus_1_sign, t_minus_2_sign, t_minus_3_sign, t_minus_4_sign,
+        last_6_candle_signs = [current_sign,
+                               t_minus_1_sign,
+                               t_minus_2_sign,
+                               t_minus_3_sign,
+                               t_minus_4_sign,
                                t_minus_5_sign]
         c = dict(Counter(last_5_candle_signs))
         is_5_out_of_6 = 1 if 5 in list(c.values()) else 0
@@ -341,13 +343,12 @@ def generate_trades(df, risk_reward_ratio=3):
         majority_sign = list(c.keys())[max_index]
 
         if (is_5_out_of_6 == 1) and (current_sign == majority_sign):  # stopped here
-            for j in range(1, 6):  # a trade can enter only in range of 5 days
+            for j in range(1, DAYS + 1):  # a trade can enter only in range of 5 days
                 future_index_day = current_day_index + j
                 if (trade_direction == 'Up') and (df.loc[future_index_day][3] <= df.loc[current_day_index][1]) and (
                         df.loc[future_index_day][3] >= df.loc[current_day_index][2]) and (df.loc[future_index_day][1] > df.loc[current_day_index][1]):
                     current_day_index = add_trade(trade_direction, current_day_index, df, future_index_day, risk_reward_ratio)
                     break
-
                 if (trade_direction == 'Down') and (df.loc[future_index_day][3] <= df.loc[current_day_index][1]) and (
                         df.loc[future_index_day][3] >= df.loc[current_day_index][2]) and (df.loc[future_index_day][2] < df.loc[current_day_index][2]):
                     current_day_index = add_trade(trade_direction, current_day_index, df, future_index_day, risk_reward_ratio)
